@@ -15,8 +15,13 @@ class ProjectController extends Controller
      */
     public function index()
     {
+        $projects = Project::query()
+            ->when(request()->search, function ($query, $search) {
+                $query->where('name', 'regexp', $search);
+            });
+
         return Inertia::render('Project/Index', [
-            'projects' => Project::paginate(1)
+            'projects' => $projects->paginate(request()->perpage ?? 100)->onEachSide(1)->appends(request()->input())
         ]);
     }
 
