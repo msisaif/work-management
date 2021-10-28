@@ -1,33 +1,35 @@
 <template>
-    <div class="w-full flex justify-start flex-wrap">
 
-        <div class="w-full md:w-auto flex-auto justify-center items-center flex order-first md:order-2">
-            <div class="w-full md:w-auto flex flex-wrap md:pb-0 pb-4">
-                <div class="flex md:w-auto w-1/2 justify-center">
-                    <select @change="search" class="filter block w-full mx-px max-w-xs">
-                        <option value="" selected>(All)</option>
-                    </select>
-                </div>
+    <div class="w-full flex flex-col sm:flex-row justify-center gap-1">
+        <div class="w-full flex flex-col md:flex-row justify-center gap-1">
+            <div class="flex" v-for="(filter, key) in filters" :key="key">
+                <select @change="searchHandler" v-model="filterData[key]" :name="key" class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0">
+                    <option value="" selected>
+                        {{ key.replace('_', ' ').toLowerCase().replace(/\b[a-z]/g, function(letter) {
+                            return letter.toUpperCase();
+                        }) }} (All)
+                    </option>
+                    <option v-for="(property, index) in filter" :key="index" :value="index">{{ property }}</option>
+                </select>
+            </div>
 
-                <div class="flex md:w-auto w-full justify-center">
-                    <select id="day" name="day" class="filter block w-full mx-px">
-                        <option value="" selected> All Date</option>
-                        <option value="7"> Last 7 days</option>
-                        <option value="15"> Last 15 days</option>
-                        <option value="30"> Last 30 days</option>
-                        <option value="90"> Last 90 days</option>
-                    </select>
-                </div>
+            <div class="flex min-w-max">
+                <select class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0">
+                    <option value="" selected> All Date</option>
+                    <option value="7"> Last 7 days</option>
+                    <option value="15"> Last 15 days</option>
+                    <option value="30"> Last 30 days</option>
+                    <option value="90"> Last 90 days</option>
+                </select>
+            </div>
 
-                <div id="dateFromContainer" class="flex md:w-auto w-1/2 justify-center">
-                    <input @input="search" name="from" type="date" class="filter block w-full mx-px" />
-                </div>
-                <div id="dateToContainer" class="flex md:w-auto w-1/2 justify-center">
-                    <input @input="search" name="to" type="date" class="filter block w-full mx-px" />
-                </div>
+            <div class="flex">
+                <input @input="search" name="from" type="date" class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0" />
+            </div>
+            <div class="flex">
+                <input @input="search" name="to" type="date" class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0" />
             </div>
         </div>
-
     </div>
 
     <div class="w-full flex justify-between py-2">
@@ -94,20 +96,33 @@ export default {
     components: { PaginatorLinks },
     props: {
         collections: Object,
+        filters: Object,
+        request: Object,
+    },
+    created() {
+        Object.entries(this.filters).forEach( ([key, value]) => {
+            this.filterData[key] = this.request[key] || ''
+        });
     },
     data() {
         return {
             perpage: this.collections.per_page,
-            search: ''
+            search: '',
+            filterData: {},
+            data: {},
         }
     },
     methods: {
         searchHandler() {
-            this.$inertia.get(this.route('projects.index', {
-                search : this.search,
-                perpage: this.perpage,
-            }), {}, { preserveState: true })
-        }
+            this.data['search'] = this.search;
+            this.data['perpage'] = this.perpage;
+
+            Object.entries(this.filterData).forEach( ([key, value]) => {
+                this.data[key] = value;
+            });
+
+            this.$inertia.get(this.route('projects.index', this.data), {}, { preserveState: true })
+        },
     }
 }
 </script>

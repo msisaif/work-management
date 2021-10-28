@@ -17,11 +17,30 @@ class ProjectController extends Controller
     {
         $projects = Project::query()
             ->when(request()->search, function ($query, $search) {
-                $query->where('name', 'regexp', $search);
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'regexp', $search);
+                });
+            })
+            ->when(request()->project_type, function ($query, $project_type) {
+                $query->where('project_type', $project_type);
+            })
+            ->when(request()->active, function ($query, $active) {
+                $query->where('active', $active);
             });
 
         return Inertia::render('Project/Index', [
-            'projects' => $projects->paginate(request()->perpage ?? 100)->onEachSide(1)->appends(request()->input())
+            'projects' => $projects->paginate(request()->perpage ?? 100)->onEachSide(1)->appends(request()->input()),
+            'request' => request()->input(),
+            'filters' => [
+                'project_type' => [
+                    1 => 'Public',
+                    2 => 'Private'
+                ],
+                'active' => [
+                    0 => 'Yes',
+                    1 => 'No'
+                ]
+            ]
         ]);
     }
 
