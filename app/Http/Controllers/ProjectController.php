@@ -26,21 +26,27 @@ class ProjectController extends Controller
             })
             ->when(request()->active, function ($query, $active) {
                 $query->where('active', $active);
+            })
+            ->when(request()->from, function ($query, $date_from) {
+                $query->whereDate('created_at', '>=', $date_from);
+            })
+            ->when(request()->to, function ($query, $date_to) {
+                $query->whereDate('created_at', '<=', $date_to);
             });
 
         return Inertia::render('Project/Index', [
             'projects' => $projects->paginate(request()->perpage ?? 100)->onEachSide(1)->appends(request()->input()),
             'request' => request()->input(),
-            'filters' => [
-                'project_type' => [
-                    1 => 'Public',
-                    2 => 'Private'
-                ],
-                'active' => [
-                    0 => 'Yes',
-                    1 => 'No'
-                ]
-            ]
+            // 'filters' => [
+            //     'project_type' => [
+            //         1 => 'Public',
+            //         2 => 'Private'
+            //     ],
+            //     'active' => [
+            //         0 => 'Yes',
+            //         1 => 'No'
+            //     ]
+            // ],
         ]);
     }
 

@@ -1,7 +1,7 @@
 <template>
 
     <div class="w-full flex flex-col sm:flex-row justify-center gap-1">
-        <div class="w-full flex flex-col md:flex-row justify-center gap-1">
+        <div class="w-full flex flex-col sm:flex-row justify-center gap-1">
             <div class="flex" v-for="(filter, key) in filters" :key="key">
                 <select @change="searchHandler" v-model="filterData[key]" :name="key" class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0">
                     <option value="" selected>
@@ -13,28 +13,12 @@
                 </select>
             </div>
 
-            <div class="flex min-w-max">
-                <select class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0">
-                    <option value="" selected> All Date</option>
-                    <option value="7"> Last 7 days</option>
-                    <option value="15"> Last 15 days</option>
-                    <option value="30"> Last 30 days</option>
-                    <option value="90"> Last 90 days</option>
-                </select>
-            </div>
-
-            <div class="flex">
-                <input @input="search" name="from" type="date" class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0" />
-            </div>
-            <div class="flex">
-                <input @input="search" name="to" type="date" class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0" />
-            </div>
         </div>
     </div>
 
-    <div class="w-full flex justify-between py-2">
-        <div class="flex">
-            <select @change="searchHandler" class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0 cursor-pointer" v-model="perpage">
+    <div class="w-full flex flex-wrap gap-2 justify-between py-2">
+        <div class="sm:w-24 flex order-2 lg:order-1">
+            <select @change="searchHandler" v-model="perpage" class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0 cursor-pointer">
                 <option value="100">100</option>
                 <option value="50">50</option>
                 <option value="25">25</option>
@@ -42,7 +26,19 @@
             </select>
         </div>
 
-        <div class="flex">
+        <div class="w-full lg:max-w-xl lg:w-auto flex order-1 lg:order-2 flex-col sm:flex-row justify-between items-end gap-2">
+            <div class="w-full max-w-sm flex justify-end items-center gap-1" v-if="dateFilter">
+                <label class="w-12 text-right text-gray-500">From</label>
+                <input @input="searchHandler" v-model="dateFrom" type="date" class="block w-full max-w-xs rounded-md shadow-sm focus:outline-none focus:ring-0" />
+            </div>
+
+            <div class="w-full max-w-sm flex justify-end items-center gap-1" v-if="dateFilter">
+                <label class="w-12 text-right text-gray-500">To</label>
+                <input @input="searchHandler" v-model="dateTo" type="date" class="block w-full max-w-xs rounded-md shadow-sm focus:outline-none focus:ring-0" />
+            </div>
+        </div>
+
+        <div class="w-2/3 max-w-xs lg:w-auto flex order-3 lg:order-3">
             <input @input="searchHandler" class="block w-full rounded-md shadow-sm focus:outline-none focus:ring-0" type="search" v-model="search" placeholder="Search here ..." />
         </div>
     </div>
@@ -91,18 +87,27 @@
 </template>
 
 <script>
+import Label from './Label.vue';
 import PaginatorLinks from './PaginatorLinks.vue'
 export default {
-    components: { PaginatorLinks },
+    components: { 
+        PaginatorLinks,
+        Label,
+    },
     props: {
-        collections: Object,
-        filters: Object,
-        request: Object,
+        collections: { type: Object, default: {} },
+        filters: { type: Object, default: {} },
+        requestData: { type: Object, default: {} },
+        dateFilter: { type: Boolean, default: false }
     },
     created() {
         Object.entries(this.filters).forEach( ([key, value]) => {
-            this.filterData[key] = this.request[key] || ''
+            this.filterData[key] = this.requestData[key] || ''
         });
+
+        this.dateFrom = this.requestData['from'] || '';
+
+        this.dateTo = this.requestData['to'] || '';
     },
     data() {
         return {
@@ -110,18 +115,33 @@ export default {
             search: '',
             filterData: {},
             data: {},
+            dateFrom: '',
+            dateTo: '',
         }
     },
     methods: {
         searchHandler() {
-            this.data['search'] = this.search;
             this.data['perpage'] = this.perpage;
 
             Object.entries(this.filterData).forEach( ([key, value]) => {
                 this.data[key] = value;
             });
 
-            this.$inertia.get(this.route('projects.index', this.data), {}, { preserveState: true })
+            this.data['from'] = this.dateFrom;
+
+            this.data['to'] = this.dateTo;
+
+            this.data['search'] = this.search;
+
+            this.$inertia.get(this.route('projects.index', this.clean(this.data)), {}, { preserveState: true })
+        },
+        clean(obj) {
+            for (var propName in obj) {
+                if (obj[propName] === '' || obj[propName] === null || obj[propName] === undefined) {
+                    delete obj[propName];
+                }
+            }
+            return obj;
         },
     }
 }

@@ -6,7 +6,7 @@
             Project List
         </template>
 
-        <DataTable :collections="projects" :filters="filters" :request="request">
+        <DataTable :collections="projects" :filters="filters" :dateFilter="true" :requestData="request">
             <template #head>
                 <th class="py-3 px-2 text-left">ID</th>
                 <th class="py-3 px-2 text-left">Name</th>
@@ -35,15 +35,10 @@ export default {
         Input,
         PaginatorLinks,
     },
-    data() {
-        return {
-            sl: 0,
-        }
-    },
     props: {
-        projects: Object,
-        filters: Object,
-        request: Object,
+        projects: { type: Object, default: {} },
+        filters: { type: Object, default: {} },
+        request: { type: Object, default: {} },
     },
 };
 </script>
