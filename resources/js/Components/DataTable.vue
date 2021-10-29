@@ -12,7 +12,6 @@
                     <option v-for="(property, index) in filter" :key="index" :value="index">{{ property }}</option>
                 </select>
             </div>
-
         </div>
     </div>
 
@@ -28,13 +27,12 @@
 
         <div class="w-full lg:max-w-xl lg:w-auto flex order-1 lg:order-2 flex-col sm:flex-row justify-between items-end gap-2">
             <div class="w-full max-w-sm flex justify-end items-center gap-1" v-if="dateFilter">
-                <label class="w-12 text-right text-gray-500">From</label>
-                <input @input="searchHandler" v-model="dateFrom" type="date" class="block w-full max-w-xs rounded-md shadow-sm focus:outline-none focus:ring-0" />
+                <label class="w-12 text-right">From</label>
+                <input @input="searchHandler" v-model="dateFrom" :max="this.dateTo" type="date" class="block w-full max-w-xs rounded-md shadow-sm focus:outline-none focus:ring-0" />
             </div>
-
             <div class="w-full max-w-sm flex justify-end items-center gap-1" v-if="dateFilter">
-                <label class="w-12 text-right text-gray-500">To</label>
-                <input @input="searchHandler" v-model="dateTo" type="date" class="block w-full max-w-xs rounded-md shadow-sm focus:outline-none focus:ring-0" />
+                <label class="w-12 text-right">To</label>
+                <input @input="searchHandler" v-model="dateTo" :min="this.dateFrom" type="date" class="block w-full max-w-xs rounded-md shadow-sm focus:outline-none focus:ring-0" />
             </div>
         </div>
 
@@ -43,14 +41,13 @@
         </div>
     </div>
 
+    <div v-if="collections.total" class="w-full p-1">
+        <paginator-links :collections="collections" />
+    </div>
+
     <div class="overflow-auto relative">
         <table class="min-w-max w-full table-auto">
             <thead>
-                <!-- <tr v-if="collections.total">
-                    <td class="py-3 px-2 text-center" colspan="100">
-                        <paginator-links :collections="collections" />
-                    </td>
-                </tr> -->
                 <tr class="bg-blue-600 text-white uppercase text-sm leading-normal">
                     <th class="py-3 px-2 text-left sticky left-0 bg-blue-600">SL</th>
 
@@ -65,7 +62,7 @@
                         {{ collections.from + index }}
                     </td>
 
-                    <slot name="body" :item="item" />
+                    <slot :item="item" />
                 </tr>
 
                 <tr v-if="! collections.total" class="border-b border-gray-200 hover:bg-gray-50">
@@ -74,40 +71,42 @@
                     </td>
                 </tr>
             </tbody>
-
-            <tfoot v-if="collections.total">
-                <tr>
-                    <td class="py-3 px-2 text-center" colspan="100">
-                        <PaginatorLinks :collections="collections" />
-                    </td>
-                </tr>
-            </tfoot>
         </table>
     </div>
+
+    <div v-if="collections.total" class="w-full p-1">
+        <paginator-links :collections="collections" />
+    </div>
+
 </template>
 
 <script>
 import Label from './Label.vue';
-import PaginatorLinks from './PaginatorLinks.vue'
+import PaginatorLinks from './PaginatorLinks.vue';
+import { usePage } from '@inertiajs/inertia-vue3'
 export default {
     components: { 
         PaginatorLinks,
         Label,
     },
+    computed:{
+		request() {
+			return usePage().props.value.request;
+		}
+	},
     props: {
         collections: { type: Object, default: {} },
         filters: { type: Object, default: {} },
-        requestData: { type: Object, default: {} },
         dateFilter: { type: Boolean, default: false }
     },
     created() {
         Object.entries(this.filters).forEach( ([key, value]) => {
-            this.filterData[key] = this.requestData[key] || ''
+            this.filterData[key] = this.request[key] || ''
         });
 
-        this.dateFrom = this.requestData['from'] || '';
+        this.dateFrom = this.request.from || '';
 
-        this.dateTo = this.requestData['to'] || '';
+        this.dateTo = this.request.to || '';
     },
     data() {
         return {

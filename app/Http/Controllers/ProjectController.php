@@ -36,17 +36,16 @@ class ProjectController extends Controller
 
         return Inertia::render('Project/Index', [
             'projects' => $projects->paginate(request()->perpage ?? 100)->onEachSide(1)->appends(request()->input()),
-            'request' => request()->input(),
-            // 'filters' => [
-            //     'project_type' => [
-            //         1 => 'Public',
-            //         2 => 'Private'
-            //     ],
-            //     'active' => [
-            //         0 => 'Yes',
-            //         1 => 'No'
-            //     ]
-            // ],
+            'filters' => [
+                'project_type' => [
+                    1 => 'Public',
+                    2 => 'Private'
+                ],
+                'active' => [
+                    0 => 'Yes',
+                    1 => 'No'
+                ]
+            ],
         ]);
     }
 

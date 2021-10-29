@@ -6,14 +6,14 @@
             Project List
         </template>
 
-        <DataTable :collections="projects" :filters="filters" :dateFilter="true" :requestData="request">
+        <DataTable :collections="projects" :filters="filters" :dateFilter="true">
             <template #head>
                 <th class="py-3 px-2 text-left">ID</th>
                 <th class="py-3 px-2 text-left">Name</th>
             </template>
-            <template #body="{item}">
-                <td class="py-3 px-2 text-left">{{ item.id }}</td>
-                <td class="py-3 px-2 text-left">{{ item.name }}</td>
+            <template #default="{item: project}">
+                <td class="py-3 px-2 text-left">{{ project.id }}</td>
+                <td class="py-3 px-2 text-left">{{ project.name }}</td>
             </template>
         </DataTable>
     </AppLayout>
@@ -38,7 +38,6 @@ export default {
     props: {
         projects: { type: Object, default: {} },
         filters: { type: Object, default: {} },
-        request: { type: Object, default: {} },
     },
 };
 </script>
